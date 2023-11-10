@@ -1,0 +1,6 @@
+numpy
+torch
+tensorflow
+opencv-python
+tensorflow-hub
+urllib3
