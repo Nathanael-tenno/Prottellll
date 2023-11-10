@@ -1,10 +1,7 @@
-# Start with a base image containing Java runtime (for Node.js)
-FROM node:16-slim
+FROM node:18.12.1
+
 # Set working directory
 WORKDIR /app
-
-# Copy package.json and package-lock.json
-COPY package*.json ./
 
 # Install Node.js dependencies
 RUN npm install
@@ -25,5 +22,5 @@ COPY . .
 # Expose the port
 EXPOSE 5000
 
-# Run the Node.js application on container startup
-CMD [ "node", "server.js" ]
+# Start the application
+CMD [ "npm", "run", "start" ]
