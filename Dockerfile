@@ -1,31 +1,29 @@
 # Start with a base image containing Java runtime (for Node.js)
 FROM node:16-slim
+# Set working directory
+WORKDIR /app
 
-# The application's port (if it's different, change it)
-EXPOSE 5000
-
-# Set the working directory in the container
-WORKDIR /usr/src/app
-
-# Copy the Node.js application files
-COPY server.js .
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install Node.js dependencies
 RUN npm install
 
-# Install Python and the Python dependencies
-# Python is not included in the Node image, so we need to install it
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    rm -rf /var/lib/apt/lists/*
+# Install Python 3 and its dependencies
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Copy the Python script and requirements.txt into the container
-COPY app.py .
-COPY requirements.txt .
+# Upgrade pip for Python 3
+RUN python3 -m pip install --no-cache-dir --upgrade pip
 
-# Install any needed Python packages specified in requirements.txt
+# Copy requirements.txt and install Python dependencies
+COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy all files to the working directory
+COPY . .
+
+# Expose the port
+EXPOSE 5000
 
 # Run the Node.js application on container startup
 CMD [ "node", "server.js" ]

@@ -35,7 +35,6 @@ label_classes = [
     "RottenTomato"
 ]
 
-
 # get image from url
 def url_to_image(url):
     resp = urllib.request.urlopen(url)
@@ -46,27 +45,36 @@ def url_to_image(url):
 def predict(url):
     image = url_to_image(url)
     
-    load = image/255.0
-    load = cv2.resize(load, (224,224))
-    z = tf.keras.utils.img_to_array(load)
-    z = np.expand_dims(z, axis=0)
-    images = np.vstack([z])
-    classes = model.predict(images, verbose=0)
-    index = np.argmax(classes) 
-    freshness_level = label_classes[index]
+    # Preprocessing gambar untuk prediksi model
+    processed_image = image / 255.0
+    processed_image = cv2.resize(processed_image, (224, 224))
+    processed_image = np.expand_dims(processed_image, axis=0)
+    
+    # Prediksi dari model tanpa progress bar
+    predictions = model.predict(processed_image, verbose=0)
+    predicted_class_index = np.argmax(predictions)
+    predicted_class = label_classes[predicted_class_index]
+    predicted_probability = predictions[0][predicted_class_index]
 
-    return ({"freshness": freshness_level})   
+    # Menghitung persentase kesegaran
+    freshness_percentage = predicted_probability * 100
+
+    # Mengembalikan hasil prediksi dan persentase kesegaran
+    return {
+        "freshness": predicted_class,
+        "confidence_percentage": freshness_percentage
+    }
 
 if __name__ == "__main__":
     import sys
-    try:  
+    try:
         if len(sys.argv) < 2:
-            print("input url image : python app.py [image_url]")
+            print("Usage: python app.py [image_url]")
             sys.exit(1)
-        
-        url = sys.argv[1]
-        output = predict(url)
-    except Exception as err:
-        print(err)
-    else:
-        print(output)
+
+        # Menerima URL gambar sebagai argumen command-line
+        image_url = sys.argv[1]
+        prediction_result = predict(image_url)
+        print(prediction_result)
+    except Exception as e:
+        print(f"Error: {e}")
